@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Quote Generator</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        text-align: center;
+        transition: background 0.5s;
+        padding: 20px;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+    }
+
+    input, button {
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+    }
+
+    button {
+        cursor: pointer;
+        background-color: #333;
+        color: #fff;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background-color: #555;
+    }
+
+    #quote {
+        margin-top: 30px;
+        font-size: 24px;
+        font-style: italic;
+        max-width: 600px;
+        line-height: 1.5;
+        transition: opacity 0.5s;
+    }
+
+    #share-buttons, #favorites {
+        margin-top: 15px;
+        display: none;
+    }
+
+    #share-buttons button, #favorites button {
+        margin: 0 5px;
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    #favorites-list {
+        margin-top: 10px;
+        max-width: 600px;
+        text-align: left;
+    }
+
+    #favorites-list li {
+        margin-bottom: 5px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Custom Quote Generator</h1>
+<label for="moodInput">How are you feeling today?</label><br>
+<input type="text" id="moodInput" placeholder="Type your mood..."><br>
+<button onclick="generateQuote()">Get Quote</button>
+
+<div id="quote"></div>
+
+<div id="share-buttons">
+    <button onclick="copyQuote()">Copy</button>
+    <button onclick="shareTwitter()">Share on Twitter</button>
+    <button onclick="saveFavorite()">Save Favorite</button>
+</div>
+
+<div id="favorites">
+    <h3>Your Favorites:</h3>
+    <ul id="favorites-list"></ul>
+</div>
+
+<script>
+const quotes = {
+    happy: [
+        "Happiness is a journey, not a destination.",
+        "Smile, it’s contagious!",
+        "The best way to cheer yourself up is to try to cheer someone else up."
+    ],
+    sad: [
+        "Tough times don’t last, but tough people do.",
+        "This too shall pass.",
+        "Even the darkest night will end and the sun will rise."
+    ],
+    motivated: [
+        "The secret of getting ahead is getting started.",
+        "Don’t watch the clock; do what it does. Keep going.",
+        "Success is not final, failure is not fatal: It is the courage to continue that counts."
+    ],
+    tired: [
+        "Rest and self-care are so important.",
+        "Sometimes the most productive thing you can do is relax.",
+        "Take a deep breath, you’ve got this."
+    ],
+    funny: [
+        "I’m on a seafood diet. I see food and I eat it!",
+        "Life is short. Smile while you still have teeth.",
+        "I’m not lazy, I’m on energy-saving mode."
+    ]
+};
+
+// Mood-color mapping
+const moodColors = {
+    happy: "#ffe066",
+    sad: "#6c5ce7",
+    motivated: "#00b894",
+    tired: "#fab1a0",
+    funny: "#fd79a8",
+    default: "#f0f0f0"
+};
+
+function generateQuote() {
+    const moodInput = document.getElementById('moodInput').value.toLowerCase().trim();
+    let moodQuotes = quotes[moodInput];
+
+    // If mood not recognized, use AI placeholder or default
+    let quote;
+    if (!moodQuotes) {
+        quote = aiGenerateQuote(moodInput);
+        document.body.style.background = moodColors.default;
+    } else {
+        const randomIndex = Math.floor(Math.random() * moodQuotes.length);
+        quote = moodQuotes[randomIndex];
+        document.body.style.background = moodColors[moodInput];
+    }
+
+    const quoteDiv = document.getElementById('quote');
+    quoteDiv.style.opacity = 0;
+
+    setTimeout(() => {
+        quoteDiv.textContent = `"${quote}"`;
+        quoteDiv.style.opacity = 1;
+        document.getElementById('share-buttons').style.display = 'block';
+        document.getElementById('favorites').style.display = 'block';
+    }, 300);
+}
+
+// Placeholder AI quote generator
+function aiGenerateQuote(mood) {
+    const genericQuotes = [
+        "Every day is a new opportunity.",
+        "Keep going, you're doing great!",
+        "Life is what you make of it.",
+        "Believe in yourself and all that you are."
+    ];
+    return genericQuotes[Math.floor(Math.random() * genericQuotes.length)] + ` (Inspired by mood: ${mood})`;
+}
+
+// Share & Save functions
+function copyQuote() {
+    const quoteText = document.getElementById('quote').textContent;
+    navigator.clipboard.writeText(quoteText);
+    alert("Quote copied to clipboard!");
+}
+
+function shareTwitter() {
+    const quoteText = document.getElementById('quote').textContent;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(quoteText)}`;
+    window.open(twitterUrl, '_blank');
+}
+
+// Save favorite quotes
+function saveFavorite() {
+    const quoteText = document.getElementById('quote').textContent;
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    if (!favorites.includes(quoteText)) favorites.push(quoteText);
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    displayFavorites();
+}
+
+function displayFavorites() {
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    const list = document.getElementById('favorites-list');
+    list.innerHTML = '';
+    favorites.forEach(q => {
+        const li = document.createElement('li');
+        li.textContent = q;
+        list.appendChild(li);
+    });
+}
+
+// Load favorites on page load
+window.onload = displayFavorites;
+</script>
+
+</body>
+</html>
